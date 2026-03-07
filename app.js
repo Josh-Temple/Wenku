@@ -4,12 +4,14 @@ const DEFAULT_BRANCH = 'main';
 const DEFAULT_THEME = 'system';
 const BASE64_CHUNK_SIZE = 0x8000;
 
-const DEFAULT_DOC = `# Welcome to Wenku\n\n- Supports **GitHub Flavored Markdown**\n- Code highlighting\n- Mermaid diagrams\n\n\`\`\`mermaid\nflowchart LR\n  A[Write Markdown] --> B[Commit to GitHub]\n  B --> C[Published on GitHub Pages]\n\`\`\`\n`;
+const DEFAULT_DOC = `# Welcome to Wenku\n\n- Viewer-first reading experience\n- Optional editing mode when needed\n- Markdown + Mermaid + syntax highlight\n\n\`\`\`mermaid\nflowchart LR\n  A[Notes App/GitHub App writes to repo] --> B[Wenku displays content]\n  B --> C[Optional edits in Wenku]\n\`\`\`\n`;
 
 const state = {
   docs: [],
   activePath: '',
-  theme: DEFAULT_THEME
+  theme: DEFAULT_THEME,
+  isEditEnabled: false,
+  headings: []
 };
 
 const elements = getElements();
@@ -38,11 +40,20 @@ function getElements() {
     commitMessageInput: document.getElementById('commitMessageInput'),
     loadDocBtn: document.getElementById('loadDocBtn'),
     saveDocBtn: document.getElementById('saveDocBtn'),
+    toggleEditBtn: document.getElementById('toggleEditBtn'),
+    modeBadge: document.getElementById('modeBadge'),
+    editorPane: document.getElementById('editorPane'),
     editor: document.getElementById('editor'),
     preview: document.getElementById('preview'),
+    outlineList: document.getElementById('outlineList'),
+    aiContextJson: document.getElementById('aiContextJson'),
+    copyAiContextBtn: document.getElementById('copyAiContextBtn'),
     themeSelect: document.getElementById('themeSelect'),
     hljsLight: document.getElementById('hljs-light'),
-    hljsDark: document.getElementById('hljs-dark')
+    hljsDark: document.getElementById('hljs-dark'),
+    contextPath: document.getElementById('contextPath'),
+    contextBlob: document.getElementById('contextBlob'),
+    contextRaw: document.getElementById('contextRaw')
   };
 }
 
@@ -84,6 +95,8 @@ function bindEvents() {
   elements.loadDocBtn.addEventListener('click', withStatus(() => loadDocument(getPathInputValue())));
   elements.saveDocBtn.addEventListener('click', withStatus(saveDocument));
   elements.newDocBtn.addEventListener('click', createNewDocumentTemplate);
+  elements.toggleEditBtn.addEventListener('click', toggleEditMode);
+  elements.copyAiContextBtn.addEventListener('click', withStatus(copyAiContextJson));
   elements.editor.addEventListener('input', () => {
     void renderPreview();
   });
@@ -106,6 +119,9 @@ function bootstrap() {
   if (!elements.editor.value) {
     elements.editor.value = DEFAULT_DOC;
   }
+  updateEditModeUi();
+  updateReferenceContext();
+  updateAiContextCard();
   applyTheme(elements.themeSelect.value || DEFAULT_THEME);
   void renderPreview();
 }
@@ -152,78 +168,21 @@ function saveConfig() {
   setStatus('Configuration saved locally.', false);
 }
 
-function setStatus(message, isError = false) {
-  elements.statusMsg.style.color = isError ? 'var(--danger)' : 'var(--accent)';
-  elements.statusMsg.textContent = message;
-}
+function applyTheme(theme) {
+  const resolved = theme === DEFAULT_THEME
+    ? (prefersDarkMedia.matches ? 'dark' : 'light')
+    : theme;
 
-function getPathInputValue() {
-  return elements.pathInput.value.trim();
-}
+  document.documentElement.dataset.theme = resolved;
 
-function resolveTheme(themeMode) {
-  if (themeMode === DEFAULT_THEME) {
-    return prefersDarkMedia.matches ? 'dark' : 'light';
-  }
-  return themeMode;
-}
-
-function applyTheme(themeMode) {
-  const resolvedTheme = resolveTheme(themeMode);
-  document.documentElement.dataset.theme = resolvedTheme;
-  elements.hljsDark.disabled = resolvedTheme !== 'dark';
-  elements.hljsLight.disabled = resolvedTheme === 'dark';
-
-  if (hasMermaid) {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: resolvedTheme === 'dark' ? 'dark' : 'default',
-      securityLevel: 'strict'
-    });
-  }
-
-  void renderPreview();
-}
-
-function getApiBase(config) {
-  return `https://api.github.com/repos/${config.owner}/${config.repo}`;
-}
-
-function getApiHeaders(config, extraHeaders = {}) {
-  return {
-    Accept: 'application/vnd.github+json',
-    Authorization: `Bearer ${config.token}`,
-    'X-GitHub-Api-Version': '2022-11-28',
-    ...extraHeaders
-  };
-}
-
-async function githubRequest(path, config, options = {}) {
-  const response = await fetch(`${getApiBase(config)}${path}`, {
-    ...options,
-    headers: getApiHeaders(config, options.headers || {})
-  });
-
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`GitHub API ${response.status}: ${detail}`);
-  }
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  return response.json();
-}
-
-function assertConnectionConfig(config) {
-  if (!config.owner || !config.repo || !config.token) {
-    throw new Error('Owner, repository, and token are required.');
+  if (elements.hljsLight && elements.hljsDark) {
+    elements.hljsLight.disabled = resolved === 'dark';
+    elements.hljsDark.disabled = resolved !== 'dark';
   }
 }
 
-function toBase64(text) {
-  const bytes = new TextEncoder().encode(text);
+function toBase64(value) {
+  const bytes = new TextEncoder().encode(value);
   let binary = '';
 
   for (let index = 0; index < bytes.length; index += BASE64_CHUNK_SIZE) {
@@ -234,25 +193,62 @@ function toBase64(text) {
   return btoa(binary);
 }
 
-function fromBase64(base64Text) {
-  const binary = atob(base64Text);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-
+function fromBase64(value) {
+  const binary = atob(value);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
 
-function normalizeAndValidatePath(path, contentDir) {
-  const trimmedPath = path.trim();
+function setStatus(message, isError = false) {
+  elements.statusMsg.textContent = message;
+  elements.statusMsg.style.color = isError ? 'var(--danger)' : 'var(--text-muted)';
+}
 
-  if (!trimmedPath || !trimmedPath.toLowerCase().endsWith('.md')) {
-    throw new Error('Please provide a valid .md file path.');
+function getPathInputValue() {
+  return elements.pathInput.value.trim();
+}
+
+function assertConnectionConfig(config) {
+  const required = ['owner', 'repo', 'branch', 'token', 'contentDir'];
+  for (const key of required) {
+    if (!config[key]) {
+      throw new Error(`Missing required setting: ${key}`);
+    }
+  }
+}
+
+async function githubRequest(path, config, init = {}) {
+  const url = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}${path}`;
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${config.token}`,
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(init.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`GitHub API ${response.status}: ${errorText}`);
   }
 
-  if (trimmedPath.startsWith('/') || trimmedPath.includes('..')) {
+  if (response.status === 204) {
+    return null;
+  }
+
+  return response.json();
+}
+
+function normalizeAndValidatePath(path, contentDir) {
+  const trimmedPath = path.trim().replace(/^\/+/, '');
+
+  if (!trimmedPath) {
+    throw new Error('Path is required.');
+  }
+
+  if (trimmedPath.includes('..')) {
     throw new Error('Path cannot be absolute or contain parent-directory traversal.');
   }
 
@@ -322,11 +318,16 @@ async function loadDocument(path) {
   elements.pathInput.value = file.path;
 
   renderDocList();
+  updateReferenceContext();
   await renderPreview();
   setStatus(`Loaded ${file.path}`, false);
 }
 
 async function saveDocument() {
+  if (!state.isEditEnabled) {
+    throw new Error('Editing is disabled. Enable editing mode before saving.');
+  }
+
   const config = getConfigFromInputs();
   assertConnectionConfig(config);
 
@@ -348,6 +349,8 @@ async function saveDocument() {
 
   state.activePath = path;
   await listDocuments(config);
+  updateReferenceContext();
+  await renderPreview();
   setStatus(`Committed ${path} to ${config.branch}. GitHub Pages will publish automatically.`, false);
 }
 
@@ -373,8 +376,10 @@ async function connectRepository() {
   }
 
   const defaultPath = `${config.contentDir}/welcome.md`;
+  state.activePath = defaultPath;
   elements.pathInput.value = defaultPath;
   elements.editor.value = DEFAULT_DOC;
+  updateReferenceContext();
   await renderPreview();
 
   if (!hasContentDirectory) {
@@ -402,13 +407,153 @@ function createNewDocumentTemplate() {
   elements.editor.value = `# ${baseName}\n\n`;
 
   renderDocList();
+  updateReferenceContext();
   void renderPreview();
+}
+
+function toggleEditMode() {
+  state.isEditEnabled = !state.isEditEnabled;
+  updateEditModeUi();
+  if (state.isEditEnabled) {
+    setStatus('Editing enabled. You can now modify and commit documents.', false);
+    return;
+  }
+
+  setStatus('View mode enabled. Editing controls are hidden.', false);
+}
+
+function updateEditModeUi() {
+  const isEditable = state.isEditEnabled;
+  elements.editorPane.classList.toggle('is-hidden', !isEditable);
+  elements.modeBadge.textContent = isEditable ? 'Edit mode' : 'View mode';
+  elements.modeBadge.classList.toggle('is-edit', isEditable);
+  elements.toggleEditBtn.textContent = isEditable ? 'Disable Editing' : 'Enable Editing';
+}
+
+function updateReferenceContext() {
+  const path = state.activePath || getPathInputValue() || '-';
+  elements.contextPath.textContent = path;
+
+  const config = getConfigFromInputs();
+  const hasRepoInfo = Boolean(config.owner && config.repo && config.branch);
+  const isValidPath = path !== '-' && !path.includes('..');
+
+  if (!hasRepoInfo || !isValidPath) {
+    setLink(elements.contextBlob, '-');
+    setLink(elements.contextRaw, '-');
+    updateAiContextCard();
+    return;
+  }
+
+  const encodedSegments = path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+  const blobUrl = `https://github.com/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/blob/${encodeURIComponent(config.branch)}/${encodedSegments}`;
+  const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/${encodeURIComponent(config.branch)}/${encodedSegments}`;
+
+  setLink(elements.contextBlob, blobUrl);
+  setLink(elements.contextRaw, rawUrl);
+  updateAiContextCard();
+}
+
+function setLink(element, href) {
+  const isPlaceholder = href === '-';
+  element.textContent = href;
+  element.href = isPlaceholder ? '#' : href;
+  element.setAttribute('aria-disabled', String(isPlaceholder));
+  element.tabIndex = isPlaceholder ? -1 : 0;
+}
+
+async function copyAiContextJson() {
+  const payload = elements.aiContextJson.textContent || '{}';
+  if (!navigator.clipboard?.writeText) {
+    throw new Error('Clipboard API is not available in this browser context.');
+  }
+
+  await navigator.clipboard.writeText(payload);
+  setStatus('Copied AI context JSON to clipboard.', false);
+}
+
+function updateOutline() {
+  elements.outlineList.innerHTML = '';
+
+  if (state.headings.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'outline-empty';
+    li.textContent = 'No headings found.';
+    elements.outlineList.appendChild(li);
+    return;
+  }
+
+  for (const heading of state.headings) {
+    const li = document.createElement('li');
+    li.style.paddingInlineStart = `${Math.max(0, heading.level - 1) * 0.7}rem`;
+
+    const anchor = document.createElement('a');
+    anchor.href = `#${heading.id}`;
+    anchor.textContent = heading.text;
+    li.appendChild(anchor);
+    elements.outlineList.appendChild(li);
+  }
+}
+
+function updateAiContextCard() {
+  const config = getConfigFromInputs();
+  const path = state.activePath || getPathInputValue() || '';
+  const payload = {
+    mode: state.isEditEnabled ? 'edit' : 'view',
+    repository: {
+      owner: config.owner || null,
+      name: config.repo || null,
+      branch: config.branch || null,
+      contentDir: config.contentDir || null
+    },
+    document: {
+      path: path || null,
+      title: state.headings[0]?.text || null,
+      headings: state.headings.map(({ level, text, id }) => ({ level, text, id })),
+      blobUrl: elements.contextBlob.getAttribute('aria-disabled') === 'true' ? null : elements.contextBlob.href,
+      rawUrl: elements.contextRaw.getAttribute('aria-disabled') === 'true' ? null : elements.contextRaw.href
+    },
+    generatedAt: new Date().toISOString()
+  };
+
+  elements.aiContextJson.textContent = JSON.stringify(payload, null, 2);
+}
+
+function collectHeadings() {
+  const headingElements = elements.preview.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const usedIds = new Set();
+  state.headings = Array.from(headingElements).map((heading) => {
+    const text = heading.textContent?.trim() || 'Untitled';
+    const level = Number(heading.tagName.slice(1));
+    let id = heading.id || slugify(text);
+
+    while (!id || usedIds.has(id)) {
+      id = `${slugify(text)}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+
+    heading.id = id;
+    usedIds.add(id);
+
+    return { level, text, id };
+  });
+}
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 async function renderPreview() {
   const source = elements.editor.value || '';
   if (!hasMarked) {
     elements.preview.innerHTML = `<pre><code>${escapeHtml(source)}</code></pre>`;
+    collectHeadings();
+    updateOutline();
+    updateAiContextCard();
     return;
   }
 
@@ -425,14 +570,16 @@ async function renderPreview() {
     });
   }
 
-  if (!hasMermaid) {
-    return;
+  if (hasMermaid) {
+    const mermaidBlocks = elements.preview.querySelectorAll('code.language-mermaid');
+    for (const block of mermaidBlocks) {
+      await replaceMermaidBlock(block);
+    }
   }
 
-  const mermaidBlocks = elements.preview.querySelectorAll('code.language-mermaid');
-  for (const block of mermaidBlocks) {
-    await replaceMermaidBlock(block);
-  }
+  collectHeadings();
+  updateOutline();
+  updateAiContextCard();
 }
 
 async function replaceMermaidBlock(block) {

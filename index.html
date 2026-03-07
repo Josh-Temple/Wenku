@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wenku Markdown Publisher</title>
+    <title>Wenku Viewer</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github.min.css" id="hljs-light" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" id="hljs-dark" disabled />
@@ -11,7 +11,10 @@
   </head>
   <body>
     <header class="app-header">
-      <h1>Wenku Markdown Publisher</h1>
+      <div>
+        <h1>Wenku Viewer</h1>
+        <p class="app-tagline">Viewer-first Markdown surface with optional in-page editing.</p>
+      </div>
       <div class="header-controls">
         <label class="theme-toggle" for="themeSelect">Theme
           <select id="themeSelect">
@@ -38,7 +41,7 @@
         <button id="connectBtn">Connect</button>
         <button id="saveConfigBtn" class="secondary">Save Local Config</button>
       </div>
-      <p class="help-text">Token is stored only in your browser localStorage. For production, prefer GitHub App/OAuth-backed token exchange.</p>
+      <p class="help-text">Use a GitHub App installation token from your note app integration for repository write-back.</p>
       <p id="statusMsg" class="status"></p>
     </section>
 
@@ -51,25 +54,72 @@
         <ul id="docList"></ul>
       </aside>
 
-      <section class="editor-pane">
+      <section class="viewer-pane" aria-labelledby="viewerTitle">
+        <div class="viewer-toolbar">
+          <div>
+            <h2 id="viewerTitle">Viewer</h2>
+            <p class="viewer-subtitle">Default mode is read-first for human and AI reference.</p>
+          </div>
+          <div class="viewer-actions">
+            <span id="modeBadge" class="mode-badge">View mode</span>
+            <button id="toggleEditBtn" class="secondary">Enable Editing</button>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <section class="meta-card" aria-labelledby="metaTitle">
+            <h3 id="metaTitle">Reference Context</h3>
+            <dl>
+              <div>
+                <dt>Path</dt>
+                <dd id="contextPath">-</dd>
+              </div>
+              <div>
+                <dt>Blob URL</dt>
+                <dd><a id="contextBlob" href="#" target="_blank" rel="noreferrer noopener">-</a></dd>
+              </div>
+              <div>
+                <dt>Raw URL</dt>
+                <dd><a id="contextRaw" href="#" target="_blank" rel="noreferrer noopener">-</a></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="meta-card" aria-labelledby="outlineTitle">
+            <h3 id="outlineTitle">Document Outline</h3>
+            <ul id="outlineList" class="outline-list"></ul>
+          </section>
+
+          <section class="meta-card meta-card-wide" aria-labelledby="aiContextTitle">
+            <div class="meta-card-header">
+              <h3 id="aiContextTitle">AI Context (JSON)</h3>
+              <button id="copyAiContextBtn" class="secondary">Copy</button>
+            </div>
+            <pre id="aiContextJson" class="ai-context-json">{}</pre>
+            <p class="help-text">Share this JSON with external AI tools (e.g. Grok) for a compact, machine-readable context snapshot.</p>
+          </section>
+        </div>
+
+        <article id="preview" class="markdown-body"></article>
+      </section>
+
+      <section class="editor-pane" id="editorPane" aria-labelledby="editorTitle">
         <div class="editor-toolbar">
-          <label>File Path
-            <input id="pathInput" value="content/welcome.md" />
-          </label>
-          <label>Commit Message
-            <input id="commitMessageInput" value="docs: update markdown content" />
-          </label>
+          <h2 id="editorTitle">Editor (Optional)</h2>
           <div class="toolbar-actions">
             <button id="loadDocBtn" class="secondary">Load</button>
             <button id="saveDocBtn">Commit & Publish</button>
           </div>
         </div>
-        <textarea id="editor" spellcheck="false"></textarea>
-      </section>
 
-      <section class="preview-pane">
-        <h2>Preview</h2>
-        <article id="preview" class="markdown-body"></article>
+        <label>File Path
+          <input id="pathInput" value="content/welcome.md" />
+        </label>
+        <label>Commit Message
+          <input id="commitMessageInput" value="docs: update markdown content" />
+        </label>
+
+        <textarea id="editor" spellcheck="false"></textarea>
       </section>
     </main>
 
