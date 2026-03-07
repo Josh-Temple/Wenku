@@ -1,7 +1,17 @@
 # HANDOFF FOR CODEX (Target: GitHub Pages Repository)
 
 ## Purpose
-This repository is deployed to **GitHub Pages** and is intended to serve a static web app (`index.html`, `styles.css`, `app.js`, and `content/`).
+This repository serves as a **viewer-first Markdown surface** on GitHub Pages.
+It is intended to display content that may be written by another note app via GitHub App integration, while keeping optional in-place editing for fallback/manual updates.
+
+## Current Product Policy
+1. Default mode is **View mode**.
+2. Editing is a secondary operation and must be explicitly enabled.
+3. Keep the page structure optimized for:
+   - Human reading
+   - Fast navigation by document list
+   - AI-friendly references (path/blob/raw links for each active document)
+   - AI-readable structure (outline + AI Context JSON)
 
 ## Current Deployment Baseline
 - Hosting: GitHub Pages
@@ -12,11 +22,23 @@ This repository is deployed to **GitHub Pages** and is intended to serve a stati
 
 ## Important Behavior to Preserve
 1. Keep asset/script paths project-page safe:
-   - Prefer relative paths (already used for local assets such as `styles.css` and `app.js`).
-2. If SPA routing is introduced in the future:
-   - Add a fallback strategy (for example, `404.html` redirect handling).
-3. If a custom domain is used:
-   - Ensure `CNAME` is committed and DNS settings are valid.
+   - Prefer relative paths for local assets.
+2. Keep viewer-first hierarchy:
+   - Document list + main preview are primary.
+   - Editor pane is optional and hidden until edit mode is enabled.
+3. Preserve reference context and AI context sections:
+   - Path
+   - Blob URL
+   - Raw URL
+   - Document outline generated from headings
+   - AI Context JSON copy payload
+4. Keep path validation strict:
+   - File operations must stay under configured `contentDir/`.
+   - Block traversal / absolute-like paths.
+5. Dark mode contrast must remain readable:
+   - Primary/secondary button foreground/background contrast
+   - Accent button label readability (`New`, `Commit & Publish`)
+   - Link readability in outline/meta cards
 
 ## Required Checks Before/After Deployment
 1. Confirm GitHub Settings → Pages is configured for **GitHub Actions**.
@@ -27,14 +49,19 @@ This repository is deployed to **GitHub Pages** and is intended to serve a stati
 4. Verify in browser/devtools:
    - Top page loads without 404
    - JS/CSS/assets load correctly
-   - No mixed-content/CORS errors for required resources
+   - View/Edit mode toggle behavior works
+   - Reference context links update with active document
+   - Outline and AI Context JSON update after document changes
+   - Dark mode contrast is readable for buttons and links
 5. After push, confirm Actions deployment succeeded and record details below.
 
 ## Session Update (Most Recent)
-- Reviewed and updated documentation (`README.md`, `HANDOFF.md`) for Pages operation clarity.
-- Added/kept `.nojekyll` at repository root.
-- Runtime behavior updates: path validation now enforces writes under `contentDir/` and blocks traversal/absolute paths; Base64 conversion is chunked for larger markdown stability; connecting gracefully handles missing content directories.
-- UI refresh applied to `styles.css` with card-based spacing, neutral + low-saturation accent palette, stronger hierarchy for buttons/labels, and short tactile motion feedback.
+- Updated product direction to viewer-first with optional editing.
+- Reworked layout to prioritize document reading and added explicit mode badge/toggle.
+- Added reference context card with active path + blob/raw URLs for AI and external link sharing.
+- Added heading-based outline and copyable AI Context JSON snapshot for easier external AI grounding.
+- Updated README and HANDOFF to reflect integration model (external note app writes, Wenku displays).
+- Adjusted dark mode tokens for safer button/link contrast in viewer controls and docs.
 
 ## Deployment Record Template (update every release)
 - Deployed URL:
