@@ -26,22 +26,6 @@ Wenku is a GitHub Pages-ready Markdown publishing repository with an in-browser 
 2. In **Settings → Pages**, ensure source is **GitHub Actions**.
 3. The workflow `.github/workflows/deploy-pages.yml` deploys the repository content to Pages on push to `main`.
 
-
-## What you need to do for GitHub Pages
-
-1. Push this branch to your GitHub repository.
-2. Open **Settings → Pages** and set **Build and deployment / Source** to **GitHub Actions**.
-3. Open **Actions** tab and confirm `Deploy GitHub Pages` workflow succeeded at least once.
-4. In **Settings → Pages**, check the published URL and open it.
-5. (If private repo) ensure your plan supports Pages for private repositories.
-6. After first publish, use the editor's **Commit & Publish** button; each commit to `main` triggers redeploy.
-
-### Optional but recommended
-
-- Add a custom domain in **Settings → Pages** if needed.
-- Protect `main` branch and require workflow checks before merge.
-- Rotate tokens regularly and prefer GitHub App/OAuth backend for production security.
-
 ## Use the editor
 
 1. Open the Pages URL (or local `index.html`).

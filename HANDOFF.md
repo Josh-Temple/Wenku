@@ -35,6 +35,3 @@ Refactored the MVP GitHub Pages Markdown publishing app for better code quality 
 2. Open: `http://localhost:4173`
 3. Connect to repository with token and verify list/load/save for markdown files.
 4. Confirm Mermaid and syntax highlight still render in preview.
-
-## User-facing note added
-- Added a concise GitHub Pages operator checklist to `README.md` so repository owners know exactly what manual setup is required in GitHub Settings/Actions.
