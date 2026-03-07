@@ -25,6 +25,9 @@ Wenku is a GitHub Pages-ready Markdown publishing repository with an in-browser 
 1. Push this repository to GitHub.
 2. In **Settings → Pages**, ensure source is **GitHub Actions**.
 3. The workflow `.github/workflows/deploy-pages.yml` deploys the repository content to Pages on push to `main`.
+4. Keep `.nojekyll` in the repository root (empty file) so Pages serves the static site without Jekyll processing side effects.
+5. For project pages (`https://<user>.github.io/<repo>/`), keep local asset paths relative (or explicitly prefixed with `/<repo>/`).
+6. Keep `HANDOFF.md` updated after each deployment cycle for the next session.
 
 ## Use the editor
 
@@ -68,3 +71,11 @@ Then open `http://localhost:4173`.
 - `app.js` was refactored to improve maintainability by separating concerns into smaller functions (bootstrap, config, GitHub API, rendering, and document operations).
 - Deprecated `escape` / `unescape` based Base64 conversion was replaced with `TextEncoder` / `TextDecoder` implementations for Unicode-safe encoding and decoding.
 - Event handling now uses a shared error wrapper for cleaner async error reporting.
+- File save/load path validation (must stay under configured content directory and avoid traversal patterns).
+- Unicode-safe Base64 handling uses chunked conversion for better stability with larger markdown files.
+
+
+## UI notes
+
+- The UI styling follows an "Engineered Play & Logic" direction: card-based layout, neutral base colors, low-saturation accents, and short interaction feedback transitions.
+- Primary actions use darker/accent emphasis, while secondary actions use white surfaces with subtle borders for hierarchy.
