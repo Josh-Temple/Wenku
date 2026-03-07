@@ -1,37 +1,49 @@
-# Handoff Notes
+# HANDOFF FOR CODEX (Target: GitHub Pages Repository)
 
-## Session summary
-Refactored the MVP GitHub Pages Markdown publishing app for better code quality and maintainability while preserving behavior.
+## Purpose
+This repository is deployed to **GitHub Pages** and is intended to serve a static web app (`index.html`, `styles.css`, `app.js`, and `content/`).
 
-## Completed changes in this session
-- Refactored `app.js` into clearer functional sections:
-  - app bootstrap and event binding
-  - configuration/state helpers
-  - GitHub API helpers
-  - document load/save/list operations
-  - markdown preview and Mermaid rendering helpers
-- Replaced deprecated Unicode Base64 conversion (`escape`/`unescape`) with `TextEncoder`/`TextDecoder` based helpers.
-- Added a shared async error wrapper for button/list event handlers to reduce duplicated `.catch(...)` patterns.
-- Kept existing user-facing functionality (multi-document management, markdown preview, Mermaid support, light/dark/system theme, GitHub read/write commit flow).
-- Updated `README.md` with a refactoring notes section.
+## Current Deployment Baseline
+- Hosting: GitHub Pages
+- Pages source: **GitHub Actions**
+- Workflow: `.github/workflows/deploy-pages.yml`
+- Artifact path: repository root (`path: .`)
+- Jekyll bypass marker: `.nojekyll` (must remain present)
 
-## Existing architecture snapshot
-- Frontend files: `index.html`, `styles.css`, `app.js`
-- Content directory: `content/*.md`
-- Deployment workflow: `.github/workflows/deploy-pages.yml` (GitHub Pages via Actions)
+## Important Behavior to Preserve
+1. Keep asset/script paths project-page safe:
+   - Prefer relative paths (already used for local assets such as `styles.css` and `app.js`).
+2. If SPA routing is introduced in the future:
+   - Add a fallback strategy (for example, `404.html` redirect handling).
+3. If a custom domain is used:
+   - Ensure `CNAME` is committed and DNS settings are valid.
 
-## Assumptions / constraints
-- Token is still stored in browser localStorage for MVP convenience.
-- No backend-based GitHub App/OAuth token exchange is implemented yet.
+## Required Checks Before/After Deployment
+1. Confirm GitHub Settings → Pages is configured for **GitHub Actions**.
+2. Confirm workflow artifact path still matches expected static output.
+3. Run local smoke check:
+   - `python3 -m http.server 4173`
+   - open `http://localhost:4173`
+4. Verify in browser/devtools:
+   - Top page loads without 404
+   - JS/CSS/assets load correctly
+   - No mixed-content/CORS errors for required resources
+5. After push, confirm Actions deployment succeeded and record details below.
 
-## Suggested next steps
-1. Introduce an auth backend for short-lived installation/user tokens.
-2. Add automated tests (unit + integration/E2E) for rendering and GitHub API interactions.
-3. Implement file operations beyond create/update (rename/delete) with confirmations.
-4. Add UI localization support (EN/JA/ZH).
+## Session Update (Most Recent)
+- Reviewed and updated documentation (`README.md`, `HANDOFF.md`) for Pages operation clarity.
+- Added/kept `.nojekyll` at repository root.
+- Runtime behavior updates: path validation now enforces writes under `contentDir/` and blocks traversal/absolute paths; Base64 conversion is chunked for larger markdown stability; connecting gracefully handles missing content directories.
+- UI refresh applied to `styles.css` with card-based spacing, neutral + low-saturation accent palette, stronger hierarchy for buttons/labels, and short tactile motion feedback.
 
-## Quick validation steps
-1. Run: `python3 -m http.server 4173`
-2. Open: `http://localhost:4173`
-3. Connect to repository with token and verify list/load/save for markdown files.
-4. Confirm Mermaid and syntax highlight still render in preview.
+## Deployment Record Template (update every release)
+- Deployed URL:
+- Deployed commit SHA:
+- Base-path/routing adjustments:
+- Known limitations:
+- Follow-up tasks:
+
+## Rollback Plan
+- Revert to the last known-good deployment commit.
+- Re-run Pages deployment via push or manual workflow dispatch.
+- Document root cause and preventive fix in the next PR.

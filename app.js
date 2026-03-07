@@ -2,6 +2,7 @@ const STORAGE_KEY = 'wenku.github.config.v1';
 const DEFAULT_CONTENT_DIR = 'content';
 const DEFAULT_BRANCH = 'main';
 const DEFAULT_THEME = 'system';
+const BASE64_CHUNK_SIZE = 0x8000;
 
 const DEFAULT_DOC = `# Welcome to Wenku\n\n- Supports **GitHub Flavored Markdown**\n- Code highlighting\n- Mermaid diagrams\n\n\`\`\`mermaid\nflowchart LR\n  A[Write Markdown] --> B[Commit to GitHub]\n  B --> C[Published on GitHub Pages]\n\`\`\`\n`;
 
@@ -222,21 +223,69 @@ function assertConnectionConfig(config) {
 }
 
 function toBase64(text) {
-  return btoa(String.fromCharCode(...new TextEncoder().encode(text)));
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+
+  for (let index = 0; index < bytes.length; index += BASE64_CHUNK_SIZE) {
+    const chunk = bytes.subarray(index, index + BASE64_CHUNK_SIZE);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
 }
 
 function fromBase64(base64Text) {
-  const bytes = Uint8Array.from(atob(base64Text), (char) => char.charCodeAt(0));
+  const binary = atob(base64Text);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
   return new TextDecoder().decode(bytes);
+}
+
+function normalizeAndValidatePath(path, contentDir) {
+  const trimmedPath = path.trim();
+
+  if (!trimmedPath || !trimmedPath.toLowerCase().endsWith('.md')) {
+    throw new Error('Please provide a valid .md file path.');
+  }
+
+  if (trimmedPath.startsWith('/') || trimmedPath.includes('..')) {
+    throw new Error('Path cannot be absolute or contain parent-directory traversal.');
+  }
+
+  const normalizedDir = (contentDir || DEFAULT_CONTENT_DIR).trim().replace(/^\/+|\/+$/g, '');
+  if (!trimmedPath.startsWith(`${normalizedDir}/`)) {
+    throw new Error(`Path must be under ${normalizedDir}/.`);
+  }
+
+  return trimmedPath;
+}
+
+function isNotFoundError(error) {
+  return error instanceof Error && error.message.startsWith('GitHub API 404:');
 }
 
 async function listDocuments(config) {
   const encodedDir = encodeURIComponent(config.contentDir);
   const encodedBranch = encodeURIComponent(config.branch);
-  const items = await githubRequest(`/contents/${encodedDir}?ref=${encodedBranch}`, config);
 
-  state.docs = (items || []).filter((item) => item.type === 'file' && item.name.endsWith('.md'));
-  renderDocList();
+  try {
+    const items = await githubRequest(`/contents/${encodedDir}?ref=${encodedBranch}`, config);
+    state.docs = (items || []).filter((item) => item.type === 'file' && item.name.endsWith('.md'));
+    renderDocList();
+    return true;
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      state.docs = [];
+      renderDocList();
+      return false;
+    }
+
+    throw error;
+  }
 }
 
 function renderDocList() {
@@ -263,7 +312,8 @@ async function loadDocument(path) {
   const config = getConfigFromInputs();
   assertConnectionConfig(config);
 
-  const encodedPath = encodeURIComponent(path);
+  const safePath = normalizeAndValidatePath(path, config.contentDir);
+  const encodedPath = encodeURIComponent(safePath);
   const encodedBranch = encodeURIComponent(config.branch);
   const file = await githubRequest(`/contents/${encodedPath}?ref=${encodedBranch}`, config);
 
@@ -280,10 +330,7 @@ async function saveDocument() {
   const config = getConfigFromInputs();
   assertConnectionConfig(config);
 
-  const path = getPathInputValue();
-  if (!path || !path.endsWith('.md')) {
-    throw new Error('Please provide a valid .md file path.');
-  }
+  const path = normalizeAndValidatePath(getPathInputValue(), config.contentDir);
 
   const existing = await fetchCurrentFile(config, path);
   const requestBody = {
@@ -317,7 +364,7 @@ async function connectRepository() {
   assertConnectionConfig(config);
 
   await githubRequest('', config);
-  await listDocuments(config);
+  const hasContentDirectory = await listDocuments(config);
 
   if (state.docs.length > 0) {
     await loadDocument(state.docs[0].path);
@@ -329,6 +376,12 @@ async function connectRepository() {
   elements.pathInput.value = defaultPath;
   elements.editor.value = DEFAULT_DOC;
   await renderPreview();
+
+  if (!hasContentDirectory) {
+    setStatus(`Connected. ${config.contentDir}/ was not found; prepared welcome.md template.`, false);
+    return;
+  }
+
   setStatus('Connected to repository. No markdown file found; prepared welcome.md template.', false);
 }
 
@@ -340,7 +393,8 @@ function createNewDocumentTemplate() {
     return;
   }
 
-  const safeName = baseName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+  const normalizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase().replace(/^-+|-+$/g, '');
+  const safeName = normalizedName || 'new-document';
   const path = `${config.contentDir}/${safeName}.md`;
 
   state.activePath = path;
