@@ -85,3 +85,24 @@ Then open `http://localhost:4173`.
   - Accent buttons (`New`, `Commit & Publish`)
   - Link text in cards and outline
 - Run a quick visual check in both Light and Dark theme before release.
+
+## Dictionary pipeline for Grok and Ingrain
+
+This repository now includes a dictionary workflow designed for scheduled AI enrichment and flashcard export.
+
+- `content/dictionary/dictionary_index.md`
+  - Canonical term registry (`id` + `term` only).
+- `content/dictionary/dictionary_detail.md`
+  - Structured details per term.
+- `ops/grok_task_spec.md`
+  - Fixed instructions for Grok scheduled tasks (missing/incomplete detection + payload generation).
+- `ops/ingrain_export_spec.md`
+  - Output contract for Ingrain-ready card payloads.
+
+### Recommended operating flow
+
+1. Keep `dictionary_index.md` updated with approved IDs and terms.
+2. Run the Grok scheduled task with both dictionary files plus the two `ops/` specs.
+3. Review Grok output (Missing Report + Ingrain Payload).
+4. Apply approved updates to `dictionary_detail.md` and import payload files as needed.
+5. Re-run a quick consistency check: every index ID should exist in detail with required fields.
