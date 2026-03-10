@@ -86,16 +86,16 @@ It is intended to display content that may be written by another note app via Gi
 - Document root cause and preventive fix in the next PR.
 
 ## Dictionary Pipeline Handoff Notes
-- Added dictionary workflow files for scheduled AI enrichment:
-  - `content/dictionary/dictionary_index.md`
-  - `content/dictionary/dictionary_detail.md`
-  - `ops/grok_task_spec.md`
-  - `ops/ingrain_export_spec.md`
-- Grok scheduled task should read the two dictionary files and both `ops/` specs.
-- Grok output contract must remain exactly two sections:
-  1. `## Missing Report`
-  2. `## Ingrain Payload`
-- Canonical matching key is `id`; do not rely on term text matching only.
-- Keep all generated payload text in English (UI/content policy alignment for Ingrain).
-- Before release, validate that each ID in `dictionary_index.md` has a corresponding detail block in `dictionary_detail.md`.
-
+- Architecture updated from **comparison-based** to **exclusion-based** scheduled generation.
+  - Old model: compare `dictionary_index.md` vs `dictionary_detail.md` to find missing/incomplete entries.
+  - New model: use the published index page as an adopted-term exclusion list, then generate domain-specific candidates.
+- Why this changed:
+  - Simpler scheduled-task prompt contract
+  - More robust parsing against one stable published source
+  - Less brittle than cross-file repository comparisons
+- Current operational flow:
+  1. Keep accepted terms in `content/dictionary/dictionary_index.md`.
+  2. Publish/update `grok-dictionary-index.html` from that file.
+  3. Prompt Grok with a domain and use the page for exclusion.
+  4. Human reviews outputs and adds accepted terms to the index.
+- `content/dictionary/dictionary_detail.md` remains optional downstream content storage and is not required for scheduled candidate generation.

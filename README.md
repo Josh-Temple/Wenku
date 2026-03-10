@@ -92,50 +92,26 @@ node scripts/build_grok_dictionary_index.mjs
   - Link text in cards and outline
 - Run a quick visual check in both Light and Dark theme before release.
 
-## Dictionary pipeline for Grok and Ingrain
+## Dictionary pipeline for Grok
 
-This repository now includes a dictionary workflow designed for scheduled AI enrichment and flashcard export.
+Wenku now uses a simple exclusion-based workflow for scheduled Grok runs:
 
-- `content/dictionary/dictionary_index.md`
-  - Canonical term registry (`id` + `term` only).
-- `content/dictionary/dictionary_detail.md`
-  - Structured details per term.
-- `ops/grok_task_spec.md`
-  - Fixed instructions for Grok scheduled tasks (missing/incomplete detection + payload generation).
-- `ops/ingrain_export_spec.md`
-  - Output contract for Ingrain-ready card payloads.
+1. `content/dictionary/dictionary_index.md` is the adopted-term registry (`id` + `term`).
+2. `grok-dictionary-index.html` publishes that registry in a machine-friendly format.
+3. Grok reads the published index page as an exclusion list.
+4. Grok is prompted with a target domain (for example: behavioral economics, learning science, neuroscience).
+5. Grok proposes candidate terms that are not already in the adopted index.
+6. A human reviewer accepts/rejects results and only accepted terms are added to `dictionary_index.md`.
 
-### Recommended operating flow
+### Role of `dictionary_detail.md`
 
-1. Keep `dictionary_index.md` updated with approved IDs and terms.
-2. Run the Grok scheduled task with both dictionary files plus the two `ops/` specs.
-3. Review Grok output (Missing Report + Ingrain Payload).
-4. Apply approved updates to `dictionary_detail.md` and import payload files as needed.
-5. Re-run a quick consistency check: every index ID should exist in detail with required fields.
-
+- `content/dictionary/dictionary_detail.md` remains available as an optional downstream content store for richer definitions/examples.
+- It is **not** required input for the scheduled Grok candidate-generation flow.
+- Scheduled runs should not perform missing/incomplete comparison between index and detail files.
 
 ### Grok-friendly dictionary index page
 
-- Added `grok-dictionary-index.html` as a machine-friendly snapshot view for `content/dictionary/dictionary_index.md`.
-- The page is generated at build/deploy time from `content/dictionary/dictionary_index.md` (no runtime fetch for core content).
-- Initial HTML already includes stable `BEGIN_ENTRY ... END_ENTRY` blocks plus a JSON snapshot (`<script type="application/json">` + visible `<pre>`).
-- Generator script: `scripts/build_grok_dictionary_index.mjs` (fails loudly on malformed/empty-parsed source).
-- The top page (`index.html`) now includes a **Grok Index Page** link in the header for direct navigation.
+- `grok-dictionary-index.html` is generated from `content/dictionary/dictionary_index.md`.
+- The page includes stable `BEGIN_ENTRY ... END_ENTRY` blocks plus lightweight metadata and JSON for reliable extraction.
+- Generator script: `scripts/build_grok_dictionary_index.mjs`.
 
-## Grok ingestion URL strategy (guidance)
-
-When deciding which URL Grok should read, prefer this order:
-
-1. **GitHub Pages (LLM-optimized single page)**
-   - Best when you can publish a slim, deterministic page specifically for machine ingestion.
-   - Keep only required fields, fixed section markers, and minimal/no JavaScript.
-2. **GitHub raw file URL**
-   - Best for quickly feeding canonical source markdown/text with minimal UI noise.
-   - Good default for immediate trials against `dictionary_index.md` or `dictionary_detail.md`.
-3. **GitHub blob page URL**
-   - Avoid when possible; includes human UI chrome and extra page noise.
-
-Versioning policy:
-
-- Use branch-based URLs (`main`) when Grok should read the latest state.
-- Use commit-fixed permalinks when reproducibility is required.
