@@ -45,12 +45,12 @@ function parseEntries(markdown) {
 
 function buildHtml(entries) {
   const meta = {
-    format_version: FORMAT_VERSION,
-    generated_at: GENERATED_AT,
+    build_timestamp_iso: GENERATED_AT,
     repository: REPOSITORY,
     source_path: SOURCE_PATH,
-    entry_count: entries.length,
+    total_entry_count: entries.length,
     commit_sha: COMMIT_SHA,
+    page_format_version: FORMAT_VERSION,
   };
 
   const payload = {
@@ -85,24 +85,41 @@ function buildHtml(entries) {
   <body>
     <main>
       <h1>Grok Dictionary Index Snapshot</h1>
-      <p>Static machine-friendly snapshot of dictionary entry IDs and terms for LLM scheduled tasks.</p>
+      <p>This page is a static machine-friendly index snapshot. The canonical source is <code>content/dictionary/dictionary_index.md</code>. Entries are intentionally repeated in multiple formats for parser reliability.</p>
 
       <h2>Snapshot Meta</h2>
       <ul>
-        <li>build_timestamp_iso: ${escapeHtml(meta.generated_at)}</li>
+        <li>build_timestamp_iso: ${escapeHtml(meta.build_timestamp_iso)}</li>
         <li>repository: ${escapeHtml(meta.repository)}</li>
         <li>source_path: ${escapeHtml(meta.source_path)}</li>
-        <li>total_entry_count: ${meta.entry_count}</li>
+        <li>total_entry_count: ${meta.total_entry_count}</li>
         <li>commit_sha: ${escapeHtml(meta.commit_sha)}</li>
-        <li>page_format_version: ${meta.format_version}</li>
+        <li>page_format_version: ${meta.page_format_version}</li>
       </ul>
+
+      <section aria-labelledby="entries-heading">
+        <h2 id="entries-heading">Entries</h2>
+        ${entries
+          .map(
+            ({ id, term }) => `<article class="entry" data-entry-id="${escapeHtml(id)}">
+          <h3>${escapeHtml(term)}</h3>
+          <dl>
+            <dt>ID</dt>
+            <dd>${escapeHtml(id)}</dd>
+            <dt>Term</dt>
+            <dd>${escapeHtml(term)}</dd>
+          </dl>
+        </article>`
+          )
+          .join('\n        ')}
+      </section>
 
       <h2>Entries (Stable Blocks)</h2>
       <pre>${stableBlocks}</pre>
 
       <h2>JSON Snapshot</h2>
-      <script id="dictionary-index-json" type="application/json">${jsonText}</script>
-      <pre>${visibleJson}</pre>
+      <script id="dictionary-json" type="application/json">${jsonText}</script>
+      <pre><code>${visibleJson}</code></pre>
 
       <h2>Source References</h2>
       <ul>

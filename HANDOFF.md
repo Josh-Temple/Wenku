@@ -71,6 +71,8 @@ It is intended to display content that may be written by another note app via Gi
 - Updated `.github/workflows/deploy-pages.yml` to run the generator before uploading the Pages artifact.
 - Kept the top-header shortcut link (`Grok Index Page`) from `index.html` to the snapshot page.
 
+- Hardened `grok-dictionary-index.html` output for parser reliability with three parallel representations emitted at build time: semantic HTML entries (`<section>/<article>/<dl>`), stable delimiter blocks, and embedded JSON (`<script id="dictionary-json" type="application/json">`) plus visible `<pre><code>`.
+
 ## Deployment Record Template (update every release)
 - Deployed URL:
 - Deployed commit SHA:
