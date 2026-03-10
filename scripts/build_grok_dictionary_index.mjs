@@ -3,9 +3,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const SOURCE_PATH = 'content/dictionary/dictionary_index.md';
 const OUTPUT_PATH = 'grok-dictionary-index.html';
 const REPOSITORY = process.env.GITHUB_REPOSITORY || 'Josh-Temple/Wenku';
-const COMMIT_SHA = process.env.GITHUB_SHA || 'N/A';
 const GENERATED_AT = new Date().toISOString();
-const FORMAT_VERSION = 1;
+const FORMAT_VERSION = 2;
 
 function escapeHtml(value) {
   return value
@@ -45,12 +44,11 @@ function parseEntries(markdown) {
 
 function buildHtml(entries) {
   const meta = {
-    build_timestamp_iso: GENERATED_AT,
+    generated_at: GENERATED_AT,
     repository: REPOSITORY,
     source_path: SOURCE_PATH,
-    total_entry_count: entries.length,
-    commit_sha: COMMIT_SHA,
-    page_format_version: FORMAT_VERSION,
+    entry_count: entries.length,
+    format_version: FORMAT_VERSION,
   };
 
   const payload = {
@@ -80,25 +78,25 @@ function buildHtml(entries) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grok Dictionary Index Snapshot</title>
+    <title>Wenku Adopted Dictionary Terms (Grok Exclusion List)</title>
   </head>
   <body>
     <main>
-      <h1>Grok Dictionary Index Snapshot</h1>
-      <p>This page is a static machine-friendly index snapshot. The canonical source is <code>content/dictionary/dictionary_index.md</code>. Entries are intentionally repeated in multiple formats for parser reliability.</p>
+      <h1>Wenku Adopted Dictionary Terms</h1>
+      <p>This page is the adopted Wenku dictionary term list for AI exclusion checks.</p>
+      <p>Grok scheduled tasks should extract terms from this page and avoid proposing terms already listed here.</p>
 
-      <h2>Snapshot Meta</h2>
+      <h2>Meta</h2>
       <ul>
-        <li>build_timestamp_iso: ${escapeHtml(meta.build_timestamp_iso)}</li>
+        <li>generated_at: ${escapeHtml(meta.generated_at)}</li>
         <li>repository: ${escapeHtml(meta.repository)}</li>
         <li>source_path: ${escapeHtml(meta.source_path)}</li>
-        <li>total_entry_count: ${meta.total_entry_count}</li>
-        <li>commit_sha: ${escapeHtml(meta.commit_sha)}</li>
-        <li>page_format_version: ${meta.page_format_version}</li>
+        <li>entry_count: ${meta.entry_count}</li>
+        <li>format_version: ${meta.format_version}</li>
       </ul>
 
       <section aria-labelledby="entries-heading">
-        <h2 id="entries-heading">Entries</h2>
+        <h2 id="entries-heading">Adopted Entries</h2>
         ${entries
           .map(
             ({ id, term }) => `<article class="entry" data-entry-id="${escapeHtml(id)}">
@@ -114,19 +112,12 @@ function buildHtml(entries) {
           .join('\n        ')}
       </section>
 
-      <h2>Entries (Stable Blocks)</h2>
+      <h2>Stable Entry Blocks</h2>
       <pre>${stableBlocks}</pre>
 
       <h2>JSON Snapshot</h2>
       <script id="dictionary-json" type="application/json">${jsonText}</script>
       <pre><code>${visibleJson}</code></pre>
-
-      <h2>Source References</h2>
-      <ul>
-        <li><a href="https://github.com/Josh-Temple/Wenku">Repository Root</a></li>
-        <li><a href="https://github.com/Josh-Temple/Wenku/blob/main/content/dictionary/dictionary_index.md">Source Markdown</a></li>
-        <li><a href="https://raw.githubusercontent.com/Josh-Temple/Wenku/main/content/dictionary/dictionary_index.md">Raw Source Markdown</a></li>
-      </ul>
     </main>
   </body>
 </html>
