@@ -110,3 +110,4 @@ It is intended to display content that may be written by another note app via Gi
   3. Prompt Grok with a domain and use the page for exclusion.
   4. Human reviews outputs and adds accepted terms to the index.
 - `content/dictionary/dictionary_detail.md` remains optional downstream content storage and is not required for scheduled candidate generation.
+- Added three adopted learning-science terms to the dictionary pipeline: `Desirable Difficulties`, `Dual Coding`, and `Elaboration` (index + detail updated).
