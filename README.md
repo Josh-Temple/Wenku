@@ -106,3 +106,28 @@ This repository now includes a dictionary workflow designed for scheduled AI enr
 3. Review Grok output (Missing Report + Ingrain Payload).
 4. Apply approved updates to `dictionary_detail.md` and import payload files as needed.
 5. Re-run a quick consistency check: every index ID should exist in detail with required fields.
+
+
+### Grok-friendly dictionary index page
+
+- Added `grok-dictionary-index.html` as a machine-friendly snapshot view for `content/dictionary/dictionary_index.md`.
+- The page fetches the index markdown, extracts `id`/`term` pairs, and renders stable `BEGIN_ENTRY ... END_ENTRY` blocks plus a JSON snapshot.
+- The top page (`index.html`) now includes a **Grok Index Page** link in the header for direct navigation.
+
+## Grok ingestion URL strategy (guidance)
+
+When deciding which URL Grok should read, prefer this order:
+
+1. **GitHub Pages (LLM-optimized single page)**
+   - Best when you can publish a slim, deterministic page specifically for machine ingestion.
+   - Keep only required fields, fixed section markers, and minimal/no JavaScript.
+2. **GitHub raw file URL**
+   - Best for quickly feeding canonical source markdown/text with minimal UI noise.
+   - Good default for immediate trials against `dictionary_index.md` or `dictionary_detail.md`.
+3. **GitHub blob page URL**
+   - Avoid when possible; includes human UI chrome and extra page noise.
+
+Versioning policy:
+
+- Use branch-based URLs (`main`) when Grok should read the latest state.
+- Use commit-fixed permalinks when reproducibility is required.
