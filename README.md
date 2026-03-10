@@ -92,26 +92,25 @@ node scripts/build_grok_dictionary_index.mjs
   - Link text in cards and outline
 - Run a quick visual check in both Light and Dark theme before release.
 
-## Dictionary pipeline for Grok
+## Adopted dictionary terms workflow (Grok)
 
-Wenku now uses a simple exclusion-based workflow for scheduled Grok runs:
+Wenku uses an exclusion-list-based workflow for scheduled Grok term generation:
 
-1. `content/dictionary/dictionary_index.md` is the adopted-term registry (`id` + `term`).
-2. `grok-dictionary-index.html` publishes that registry in a machine-friendly format.
-3. Grok reads the published index page as an exclusion list.
-4. Grok is prompted with a target domain (for example: behavioral economics, learning science, neuroscience).
-5. Grok proposes candidate terms that are not already in the adopted index.
-6. A human reviewer accepts/rejects results and only accepted terms are added to `dictionary_index.md`.
+1. Keep `content/dictionary/dictionary_index.md` updated with **adopted terms only**.
+2. Publish `grok-dictionary-index.html` as the Grok-readable adopted-term list.
+3. Run Grok scheduled tasks with a user-specified domain prompt.
+4. Grok reads the adopted-term page and avoids already-listed terms.
+5. Human review decides what to accept; accepted terms are added to `dictionary_index.md`.
 
-### Role of `dictionary_detail.md`
+### Dictionary file roles
 
-- `content/dictionary/dictionary_detail.md` remains available as an optional downstream content store for richer definitions/examples.
-- It is **not** required input for the scheduled Grok candidate-generation flow.
-- Scheduled runs should not perform missing/incomplete comparison between index and detail files.
+- `content/dictionary/dictionary_index.md` - adopted-term registry and exclusion source.
+- `content/dictionary/dictionary_detail.md` - optional downstream detail store for accepted terms.
+- `ops/grok_task_spec.md` - scheduled prompt contract for exclusion-list-based candidate generation.
+- `ops/ingrain_export_spec.md` - optional export guidance when accepted terms are later converted into cards.
 
-### Grok-friendly dictionary index page
+### Published index format
 
 - `grok-dictionary-index.html` is generated from `content/dictionary/dictionary_index.md`.
-- The page includes stable `BEGIN_ENTRY ... END_ENTRY` blocks plus lightweight metadata and JSON for reliable extraction.
+- The page includes stable `BEGIN_ENTRY ... END_ENTRY` blocks and an embedded JSON snapshot (`<script type="application/json">`) for reliable extraction.
 - Generator script: `scripts/build_grok_dictionary_index.mjs`.
-

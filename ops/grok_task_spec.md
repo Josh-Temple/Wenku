@@ -1,25 +1,26 @@
 # Grok Scheduled Task Specification
 
 ## Purpose
-Generate candidate Wenku dictionary terms for a user-specified domain while excluding terms that are already adopted.
+Generate a small list of new Wenku dictionary term candidates for a requested domain, while excluding already adopted terms.
 
 ## Inputs
 1. Published `grok-dictionary-index.html` page
-2. Domain prompt (example: behavioral economics, learning science, neuroscience)
+2. Domain prompt (for example: behavioral economics, learning science, neuroscience)
 
-## Core Rules
-1. Treat the published index page as the exclusion source of truth.
-2. Extract existing terms from the page before generating candidates.
-3. Do not return a candidate if its term already appears in the adopted list.
-4. Focus only on the requested domain.
-5. Output must be in English only.
+## Task Behavior
+1. Read the published adopted-term page.
+2. Extract adopted terms from stable `BEGIN_ENTRY ... END_ENTRY` blocks and/or the JSON snapshot.
+3. Treat extracted terms as the exclusion list.
+4. Propose only new candidates relevant to the requested domain.
+5. Keep output concise and in English.
 
-## Output
-Return a concise candidate list for human review. Each candidate should include:
+## Output Format
+Return a limited candidate list for human review. For each candidate include:
 - `term`
-- short rationale for why it fits the requested domain
+- short rationale for domain relevance
 
-## Safety and Scope
-- Do not compare repository files for missing or incomplete entries.
-- Do not require `dictionary_detail.md` for scheduled generation.
-- Human review decides what gets accepted and added to `dictionary_index.md`.
+## Scope Boundaries
+- Do not perform missing/incomplete detection.
+- Do not compare repository files.
+- Do not require `dictionary_detail.md` during scheduled runs.
+- Human review decides acceptance; accepted terms are then added to `dictionary_index.md`.
