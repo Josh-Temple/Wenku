@@ -76,6 +76,12 @@ python3 -m http.server 4173
 
 Then open `http://localhost:4173`.
 
+To regenerate the static Grok index page locally:
+
+```bash
+node scripts/build_grok_dictionary_index.mjs
+```
+
 
 ## Accessibility and dark mode contrast
 
@@ -111,7 +117,9 @@ This repository now includes a dictionary workflow designed for scheduled AI enr
 ### Grok-friendly dictionary index page
 
 - Added `grok-dictionary-index.html` as a machine-friendly snapshot view for `content/dictionary/dictionary_index.md`.
-- The page fetches the index markdown, extracts `id`/`term` pairs, and renders stable `BEGIN_ENTRY ... END_ENTRY` blocks plus a JSON snapshot.
+- The page is generated at build/deploy time from `content/dictionary/dictionary_index.md` (no runtime fetch for core content).
+- Initial HTML already includes stable `BEGIN_ENTRY ... END_ENTRY` blocks plus a JSON snapshot (`<script type="application/json">` + visible `<pre>`).
+- Generator script: `scripts/build_grok_dictionary_index.mjs` (fails loudly on malformed/empty-parsed source).
 - The top page (`index.html`) now includes a **Grok Index Page** link in the header for direct navigation.
 
 ## Grok ingestion URL strategy (guidance)

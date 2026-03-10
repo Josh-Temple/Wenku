@@ -66,8 +66,10 @@ It is intended to display content that may be written by another note app via Gi
 - Documented Grok ingestion URL decision guidance (Pages-optimized > raw > blob) in README.
 - Added policy note for latest-vs-reproducible URL selection (branch URL vs commit permalink).
 
-- Added `grok-dictionary-index.html` to provide a Grok-friendly dictionary index snapshot with stable entry blocks and JSON output.
-- Added a top-header shortcut link (`Grok Index Page`) from `index.html` to the new snapshot page.
+- Reworked `grok-dictionary-index.html` into a build-generated static snapshot so the first HTML response already contains all dictionary entries and JSON (no JS fetch dependency).
+- Added `scripts/build_grok_dictionary_index.mjs` to parse `content/dictionary/dictionary_index.md`, preserve order, emit stable `BEGIN_ENTRY ... END_ENTRY` blocks, and fail loudly on malformed/empty-parsed input.
+- Updated `.github/workflows/deploy-pages.yml` to run the generator before uploading the Pages artifact.
+- Kept the top-header shortcut link (`Grok Index Page`) from `index.html` to the snapshot page.
 
 ## Deployment Record Template (update every release)
 - Deployed URL:
