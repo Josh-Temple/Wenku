@@ -1,7 +1,7 @@
 # Ingrain Export Specification for Dictionary Pipeline
 
 ## Goal
-Define a stable output format that Grok can generate and Codex can apply with minimal editing.
+Define an optional downstream output format for accepted terms when generating card-ready content with minimal editing.
 
 ## Primary Format
 Use Markdown cards with YAML front matter.

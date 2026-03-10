@@ -71,7 +71,18 @@ It is intended to display content that may be written by another note app via Gi
 - Updated `.github/workflows/deploy-pages.yml` to run the generator before uploading the Pages artifact.
 - Kept the top-header shortcut link (`Grok Index Page`) from `index.html` to the snapshot page.
 
-- Hardened `grok-dictionary-index.html` output for parser reliability with three parallel representations emitted at build time: semantic HTML entries (`<section>/<article>/<dl>`), stable delimiter blocks, and embedded JSON (`<script id="dictionary-json" type="application/json">`) plus visible `<pre><code>`.
+- Simplified `grok-dictionary-index.html` for exclusion-list use: removed the duplicated human-readable entry list and visible JSON debug block, keeping stable delimiter blocks plus embedded JSON (`<script id="dictionary-json" type="application/json">`) in the initial HTML.
+
+
+## Dictionary Workflow Update (Latest)
+- Dictionary operations are now exclusion-list-based for Grok scheduled tasks.
+- Old model retired from ops docs: cross-file missing/incomplete detection between index/detail.
+- New model in use:
+  1. `dictionary_index.md` is the adopted-term registry.
+  2. `grok-dictionary-index.html` is the machine-readable exclusion list.
+  3. Grok receives a domain prompt and proposes only non-adopted candidates.
+  4. Human review accepts/rejects; only accepted terms are added to the index.
+- `dictionary_detail.md` and `ops/ingrain_export_spec.md` are optional downstream references and not required for each scheduled Grok run.
 
 ## Deployment Record Template (update every release)
 - Deployed URL:
