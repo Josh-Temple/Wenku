@@ -77,6 +77,28 @@ body {
   font-size: 0.88rem;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.top-link {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: var(--link);
+  background: var(--surface-soft);
+}
+
+.top-link:hover {
+  border-color: var(--accent-2);
+}
+
 .theme-toggle {
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -388,6 +410,16 @@ button:focus-visible {
 }
 
 @media (max-width: 900px) {
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .header-controls {
+    justify-content: space-between;
+  }
+
   .layout {
     grid-template-columns: 1fr;
   }
