@@ -3,140 +3,115 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grok Dictionary Index</title>
-    <style>
-      :root {
-        --bg: #f8fafc;
-        --surface: #ffffff;
-        --text: #0f172a;
-        --muted: #475569;
-        --border: #cbd5e1;
-        --accent: #1d4ed8;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        line-height: 1.5;
-      }
-      main {
-        width: min(980px, 94vw);
-        margin: 1.25rem auto 2rem;
-      }
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1rem;
-        margin-top: 0.9rem;
-      }
-      h1, h2 { margin: 0 0 0.55rem; }
-      h1 { font-size: 1.35rem; }
-      h2 { font-size: 1rem; color: var(--muted); }
-      .muted { color: var(--muted); font-size: 0.9rem; }
-      .links a { color: var(--accent); text-decoration: none; }
-      .links a:hover { text-decoration: underline; }
-      .entry {
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 0.7rem;
-        margin-top: 0.55rem;
-        white-space: pre-wrap;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 0.86rem;
-      }
-      code {
-        background: #e2e8f0;
-        border-radius: 8px;
-        padding: 0.1rem 0.35rem;
-      }
-      pre {
-        overflow: auto;
-        background: #0f172a;
-        color: #e2e8f0;
-        border-radius: 10px;
-        padding: 0.9rem;
-      }
-    </style>
+    <title>Grok Dictionary Index Snapshot</title>
   </head>
   <body>
     <main>
-      <section class="card">
-        <h1>Grok Dictionary Index Snapshot</h1>
-        <p class="muted">A machine-friendly page for <code>content/dictionary/dictionary_index.md</code>.</p>
-        <p class="muted">This page keeps a stable structure and avoids UI-heavy elements.</p>
-        <p class="links">
-          <a href="./index.html">Back to Wenku top</a> |
-          <a href="./content/dictionary/dictionary_index.md">Open index file</a>
-        </p>
-      </section>
+      <h1>Grok Dictionary Index Snapshot</h1>
+      <p>Static machine-friendly snapshot of dictionary entry IDs and terms for LLM scheduled tasks.</p>
 
-      <section class="card">
-        <h2>Snapshot Meta</h2>
-        <div id="meta" class="muted">Loading...</div>
-      </section>
+      <h2>Snapshot Meta</h2>
+      <ul>
+        <li>build_timestamp_iso: 2026-03-10T08:27:51.195Z</li>
+        <li>repository: Josh-Temple/Wenku</li>
+        <li>source_path: content/dictionary/dictionary_index.md</li>
+        <li>total_entry_count: 5</li>
+        <li>commit_sha: N/A</li>
+        <li>page_format_version: 1</li>
+      </ul>
 
-      <section class="card">
-        <h2>Entries (Stable Blocks)</h2>
-        <div id="entries"></div>
-      </section>
+      <h2>Entries (Stable Blocks)</h2>
+      <pre>BEGIN_ENTRY
+id: TERM-0001
+term: Spacing Effect
+END_ENTRY
 
-      <section class="card">
-        <h2>JSON View</h2>
-        <pre id="json">{}</pre>
-      </section>
+BEGIN_ENTRY
+id: TERM-0002
+term: Testing Effect
+END_ENTRY
+
+BEGIN_ENTRY
+id: TERM-0003
+term: Forgetting Curve
+END_ENTRY
+
+BEGIN_ENTRY
+id: TERM-0004
+term: Interleaving
+END_ENTRY
+
+BEGIN_ENTRY
+id: TERM-0005
+term: Retrieval Practice
+END_ENTRY</pre>
+
+      <h2>JSON Snapshot</h2>
+      <script id="dictionary-index-json" type="application/json">{
+  "format_version": 1,
+  "generated_at": "2026-03-10T08:27:51.195Z",
+  "repository": "Josh-Temple/Wenku",
+  "source_path": "content/dictionary/dictionary_index.md",
+  "entry_count": 5,
+  "entries": [
+    {
+      "id": "TERM-0001",
+      "term": "Spacing Effect"
+    },
+    {
+      "id": "TERM-0002",
+      "term": "Testing Effect"
+    },
+    {
+      "id": "TERM-0003",
+      "term": "Forgetting Curve"
+    },
+    {
+      "id": "TERM-0004",
+      "term": "Interleaving"
+    },
+    {
+      "id": "TERM-0005",
+      "term": "Retrieval Practice"
+    }
+  ]
+}</script>
+      <pre>{
+  "format_version": 1,
+  "generated_at": "2026-03-10T08:27:51.195Z",
+  "repository": "Josh-Temple/Wenku",
+  "source_path": "content/dictionary/dictionary_index.md",
+  "entry_count": 5,
+  "entries": [
+    {
+      "id": "TERM-0001",
+      "term": "Spacing Effect"
+    },
+    {
+      "id": "TERM-0002",
+      "term": "Testing Effect"
+    },
+    {
+      "id": "TERM-0003",
+      "term": "Forgetting Curve"
+    },
+    {
+      "id": "TERM-0004",
+      "term": "Interleaving"
+    },
+    {
+      "id": "TERM-0005",
+      "term": "Retrieval Practice"
+    }
+  ]
+}</pre>
+
+      <h2>Source References</h2>
+      <ul>
+        <li><a href="https://github.com/Josh-Temple/Wenku">Repository Root</a></li>
+        <li><a href="https://github.com/Josh-Temple/Wenku/blob/main/content/dictionary/dictionary_index.md">Source Markdown</a></li>
+        <li><a href="https://raw.githubusercontent.com/Josh-Temple/Wenku/main/content/dictionary/dictionary_index.md">Raw Source Markdown</a></li>
+      </ul>
     </main>
-
-    <script>
-      async function loadIndex() {
-        const sourcePath = './content/dictionary/dictionary_index.md';
-        const metaEl = document.getElementById('meta');
-        const entriesEl = document.getElementById('entries');
-        const jsonEl = document.getElementById('json');
-
-        try {
-          const response = await fetch(sourcePath, { cache: 'no-store' });
-          if (!response.ok) {
-            throw new Error('Failed to load dictionary index markdown.');
-          }
-          const text = await response.text();
-          const lines = text.split(/\r?\n/);
-
-          const entries = lines
-            .map((line) => line.trim())
-            .filter((line) => line.startsWith('- id:'))
-            .map((line) => {
-              const match = /^- id:\s*([^|]+)\|\s*term:\s*(.+)$/i.exec(line);
-              if (!match) return null;
-              return { id: match[1].trim(), term: match[2].trim() };
-            })
-            .filter(Boolean);
-
-          metaEl.textContent = `source=${sourcePath} | total_entries=${entries.length} | generated_at=${new Date().toISOString()}`;
-
-          if (entries.length === 0) {
-            entriesEl.innerHTML = '<p class="muted">No entries detected.</p>';
-          } else {
-            entriesEl.innerHTML = entries
-              .map((entry) => `<div class="entry">BEGIN_ENTRY\nid: ${entry.id}\nterm: ${entry.term}\nEND_ENTRY</div>`)
-              .join('');
-          }
-
-          jsonEl.textContent = JSON.stringify({
-            sourcePath,
-            totalEntries: entries.length,
-            generatedAt: new Date().toISOString(),
-            entries
-          }, null, 2);
-        } catch (error) {
-          metaEl.textContent = `error=${error.message}`;
-          entriesEl.innerHTML = '<p class="muted">Could not render entries.</p>';
-          jsonEl.textContent = JSON.stringify({ error: error.message }, null, 2);
-        }
-      }
-
-      loadIndex();
-    </script>
   </body>
 </html>
