@@ -36,13 +36,13 @@
         <label>Content Directory <input id="contentDirInput" value="content" /></label>
       </div>
       <label>GitHub Token (repo read/write)
-        <input id="tokenInput" type="password" placeholder="ghp_... or GitHub App installation token" />
+        <input id="tokenInput" type="password" autocomplete="off" placeholder="ghp_... or GitHub App installation token" />
       </label>
       <div class="button-row">
         <button id="connectBtn">Connect</button>
         <button id="saveConfigBtn" class="secondary">Save Local Config</button>
       </div>
-      <p class="help-text">Use a GitHub App installation token from your note app integration for repository write-back.</p>
+      <p class="help-text">Use a short-lived GitHub App installation token for repository write-back. The token is kept only in this page and must be entered again after reloading.</p>
       <p id="statusMsg" class="status"></p>
     </section>
 

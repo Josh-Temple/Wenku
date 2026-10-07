@@ -111,3 +111,10 @@ It is intended to display content that may be written by another note app via Gi
   4. Human reviews outputs and adds accepted terms to the index.
 - `content/dictionary/dictionary_detail.md` remains optional downstream content storage and is not required for scheduled candidate generation.
 - Added three adopted learning-science terms to the dictionary pipeline: `Desirable Difficulties`, `Dual Coding`, and `Elaboration` (index + detail updated).
+
+## Security audit change — 2026-10-07 (PR only)
+- Stop persisting GitHub credentials; retain repository and theme preferences.
+- Remove legacy saved tokens on load, and clear malformed saved configuration without logging it.
+- Keep the token in the current page for existing GitHub read/write calls; reload requires re-entry.
+- Verification: `node --check app.js` and `node scripts/test-config-security.mjs`.
+- Production is unchanged until this PR is merged and Pages deploys; do not record this as a completed deployment.

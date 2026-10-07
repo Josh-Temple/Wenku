@@ -66,7 +66,9 @@ The viewer now surfaces three machine/helpful context layers above the rendered 
 4. Keep using **View mode** for regular operations.
 5. Click **Enable Editing** only when you need to edit and commit.
 
-> Security note: token is stored in browser `localStorage` for convenience in this MVP. For production, use a GitHub App/OAuth token exchange backend and avoid persisting long-lived tokens in the browser.
+> Security note: the token is kept only in the current page, never saved to `localStorage` or `sessionStorage`. Reloading requires entering it again. Previously saved tokens are removed when the updated page loads. Prefer short-lived, repository-scoped GitHub App tokens. Other scripts running on this page can still access an entered token; a trusted token exchange backend is a future improvement.
+
+Run the credential-storage regression check with `node scripts/test-config-security.mjs`.
 
 ## Local preview
 
