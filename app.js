@@ -155,17 +155,25 @@ function loadConfig() {
     elements.repoInput.value = saved.repo || '';
     elements.branchInput.value = saved.branch || DEFAULT_BRANCH;
     elements.contentDirInput.value = saved.contentDir || DEFAULT_CONTENT_DIR;
-    elements.tokenInput.value = saved.token || '';
+    // Project Pages share an origin; never restore a credential from storage.
+    if (Object.prototype.hasOwnProperty.call(saved, 'token')) {
+      delete saved.token;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    }
     state.theme = saved.theme || DEFAULT_THEME;
     elements.themeSelect.value = state.theme;
   } catch (error) {
-    console.warn('Unable to parse saved config.', error);
+    // Invalid legacy data may also contain a credential; do not log its contents.
+    localStorage.removeItem(STORAGE_KEY);
+    console.warn('Unable to parse saved config.');
   }
 }
 
 function saveConfig() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getConfigFromInputs()));
-  setStatus('Configuration saved locally.', false);
+  const config = getConfigFromInputs();
+  delete config.token;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  setStatus('Configuration saved locally. Token is kept only in this page.', false);
 }
 
 function applyTheme(theme) {
